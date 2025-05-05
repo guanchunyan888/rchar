@@ -1,0 +1,845 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>随机字符生成器</title>
+    <link rel="icon" href="https://avatars.githubusercontent.com/u/184772595?v=4" type="image/x-icon">
+    <style>
+        :root {
+            --bg-color: #f5f5f5;
+            --text-color: #333;
+            --container-bg: white;
+            --container-shadow: rgba(0,0,0,0.1);
+            --border-color: #ddd;
+            --input-bg: white;
+            --button-bg: #e74c3c;
+            --button-hover: #c0392b;
+            --button-text: white;
+            --secondary-button-bg: #3498db;
+            --secondary-button-hover: #2980b9;
+            --tooltip-bg: #555;
+            --tooltip-text: white;
+            --result-bg: #f9f9f9;
+            --progress-bg: #f0f0f0;
+            --progress-fill: #e74c3c;
+            --footer-color: #999;
+            --footer-border: #eee;
+            --link-color: #3498db;
+            --advanced-border: #eee;
+            --info-color: #777;
+        }
+        
+        [data-theme="dark"] {
+            --bg-color: #222;
+            --text-color: #eee;
+            --container-bg: #333;
+            --container-shadow: rgba(0,0,0,0.3);
+            --border-color: #444;
+            --input-bg: #444;
+            --button-bg: #e74c3c;
+            --button-hover: #c0392b;
+            --button-text: white;
+            --secondary-button-bg: #2980b9;
+            --secondary-button-hover: #3498db;
+            --tooltip-bg: #222;
+            --tooltip-text: #eee;
+            --result-bg: #444;
+            --progress-bg: #555;
+            --progress-fill: #e74c3c;
+            --footer-color: #888;
+            --footer-border: #444;
+            --link-color: #5dade2;
+            --advanced-border: #444;
+            --info-color: #aaa;
+        }
+        
+        body {
+            font-family: 'Microsoft YaHei', sans-serif;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            text-align: center;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+        h1 {
+            color: #e74c3c;
+            margin-bottom: 30px;
+        }
+        .container {
+            background-color: var(--container-bg);
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 3px 15px var(--container-shadow);
+            transition: all 0.5s ease;
+            animation: fadeInUp 0.8s ease;
+        }
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .input-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input[type="number"], input[type="text"] {
+            width: 80px;
+            padding: 8px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            text-align: center;
+            background-color: var(--input-bg);
+            color: var(--text-color);
+            transition: background-color 0.3s, color 0.3s, border-color 0.3s;
+        }
+        input[type="text"] {
+            width: 200px;
+        }
+        button {
+            background-color: var(--button-bg);
+            color: var(--button-text);
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+            margin-top: 10px;
+        }
+        button:hover {
+            background-color: var(--button-hover);
+        }
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        .result-container {
+            margin-top: 20px;
+            transition: all 0.3s ease;
+        }
+        .result {
+            padding: 15px;
+            border: 1px dashed var(--border-color);
+            border-radius: 4px;
+            background-color: var(--result-bg);
+            color: var(--text-color);
+            font-size: 16px;
+            min-height: 30px;
+            max-height: 150px;
+            overflow-y: auto;
+            word-wrap: break-word;
+            text-align: left;
+            transition: all 0.3s ease;
+            animation-duration: 0.3s;
+            animation-fill-mode: both;
+        }
+        .result.generating {
+            animation-name: pulse;
+            animation-iteration-count: infinite;
+            animation-duration: 1.5s;
+        }
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(231, 76, 60, 0.4);
+            }
+            70% {
+                box-shadow: 0 0 0 5px rgba(231, 76, 60, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(231, 76, 60, 0);
+            }
+        }
+        .success-animation {
+            animation: success-animation 0.5s ease;
+        }
+        @keyframes success-animation {
+            0% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.03);
+            }
+            100% {
+                transform: scale(1);
+            }
+        }
+        .info {
+            margin-top: 20px;
+            font-size: 14px;
+            color: var(--info-color);
+            text-align: left;
+            transition: color 0.3s;
+        }
+        .checkbox-group {
+            margin: 10px 0;
+        }
+        .checkbox-group label {
+            display: inline-block;
+            font-weight: normal;
+            margin-right: 15px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .checkbox-group label:hover {
+            color: var(--link-color);
+        }
+        .tooltip {
+            display: inline-block;
+            margin-left: 5px;
+            position: relative;
+            color: var(--info-color);
+            cursor: help;
+        }
+        .tooltip:hover .tooltip-text {
+            visibility: visible;
+            opacity: 1;
+            transform: translateY(-5px);
+        }
+        .tooltip-text {
+            visibility: hidden;
+            width: 200px;
+            background-color: var(--tooltip-bg);
+            color: var(--tooltip-text);
+            text-align: center;
+            border-radius: 6px;
+            padding: 8px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -100px;
+            opacity: 0;
+            transition: opacity 0.3s, transform 0.3s;
+            font-size: 12px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+            transform: translateY(0);
+        }
+        .copy-btn {
+            background-color: var(--secondary-button-bg);
+            margin-left: 10px;
+            padding: 5px 10px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        .copy-btn:hover {
+            background-color: var(--secondary-button-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+        .copy-btn:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .progress-container {
+            display: none;
+            margin-top: 15px;
+        }
+        .progress-bar {
+            width: 100%;
+            background-color: var(--progress-bg);
+            height: 10px;
+            border-radius: 5px;
+            overflow: hidden;
+            transition: background-color 0.3s;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .progress {
+            height: 100%;
+            background-color: var(--progress-fill);
+            width: 0%;
+            transition: width 0.3s ease-out;
+            background-image: linear-gradient(45deg, 
+                rgba(255,255,255,0.15) 25%, 
+                transparent 25%, 
+                transparent 50%, 
+                rgba(255,255,255,0.15) 50%, 
+                rgba(255,255,255,0.15) 75%, 
+                transparent 75%, 
+                transparent);
+            background-size: 20px 20px;
+            animation: progress-stripes 1s linear infinite;
+        }
+        @keyframes progress-stripes {
+            0% {
+                background-position: 0 0;
+            }
+            100% {
+                background-position: 20px 0;
+            }
+        }
+        .status {
+            font-size: 12px;
+            color: var(--info-color);
+            margin-top: 5px;
+            text-align: center;
+            transition: color 0.3s;
+        }
+        .footer {
+            margin-top: 30px;
+            font-size: 12px;
+            color: var(--footer-color);
+            text-align: center;
+            border-top: 1px solid var(--footer-border);
+            padding-top: 15px;
+            transition: color 0.3s, border-color 0.3s;
+        }
+        .footer a {
+            color: var(--link-color);
+            text-decoration: none;
+            transition: color 0.3s;
+            position: relative;
+        }
+        .footer a:after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 1px;
+            bottom: -2px;
+            left: 0;
+            background-color: var(--link-color);
+            transition: width 0.3s ease;
+        }
+        .footer a:hover:after {
+            width: 100%;
+        }
+        .advanced-options {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px dashed var(--advanced-border);
+            transition: border-color 0.3s;
+        }
+        .advanced-options-toggle {
+            color: var(--link-color);
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 4px;
+        }
+        .advanced-options-toggle:hover {
+            background-color: rgba(53, 152, 219, 0.1);
+            transform: translateY(-1px);
+        }
+        .advanced-options-content {
+            display: none;
+            margin-top: 10px;
+            animation: fadeIn 0.5s ease;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .input-row {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .input-row label {
+            margin-right: 10px;
+            width: 120px;
+            display: inline-block;
+            margin-bottom: 0;
+        }
+        select {
+            padding: 8px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            background-color: var(--input-bg);
+            color: var(--text-color);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+        select:hover {
+            border-color: var(--link-color);
+        }
+        select:focus {
+            outline: none;
+            border-color: var(--secondary-button-bg);
+            box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+        }
+        input[type="number"]:focus, input[type="text"]:focus {
+            outline: none;
+            border-color: var(--secondary-button-bg);
+            box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+        }
+        button {
+            background-color: var(--button-bg);
+            color: var(--button-text);
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+            position: relative;
+            overflow: hidden;
+        }
+        button:hover {
+            background-color: var(--button-hover);
+            transform: translateY(-3px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+        }
+        button:active {
+            transform: translateY(-1px);
+            box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+        }
+        button:after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 5px;
+            height: 5px;
+            background: rgba(255, 255, 255, 0.5);
+            opacity: 0;
+            border-radius: 100%;
+            transform: scale(1, 1) translate(-50%);
+            transform-origin: 50% 50%;
+        }
+        button:focus:not(:active)::after {
+            animation: ripple 1s ease-out;
+        }
+        @keyframes ripple {
+            0% {
+                transform: scale(0, 0);
+                opacity: 0.5;
+            }
+            20% {
+                transform: scale(25, 25);
+                opacity: 0.3;
+            }
+            100% {
+                opacity: 0;
+                transform: scale(40, 40);
+            }
+        }
+
+        /* 语言切换按钮 */
+        .lang-switch {
+            display: inline-flex;
+            margin-right: 10px;
+        }
+        .lang-btn {
+            background-color: var(--secondary-button-bg);
+            color: var(--button-text);
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            text-decoration: none;
+        }
+        .lang-btn:hover {
+            background-color: var(--secondary-button-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+        
+        /* 主题切换按钮 */
+        .theme-btn {
+            background-color: var(--secondary-button-bg);
+            color: var(--button-text);
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .theme-btn:hover {
+            background-color: var(--secondary-button-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+        .theme-icon {
+            margin-left: 5px;
+            display: inline-block;
+            transition: transform 0.5s ease;
+        }
+        
+        /* 调整主题和语言切换区域的布局 */
+        .header-controls {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+        }
+        
+        @media (max-width: 650px) {
+            .header-controls {
+                position: relative;
+                top: 0;
+                right: 0;
+                margin-bottom: 15px;
+                display: flex;
+                justify-content: flex-end;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header-controls">
+        <div class="lang-switch">
+            <a href="en.html" class="lang-btn">English</a>
+        </div>
+        <div class="theme-switch-wrapper">
+            <button class="theme-btn" id="theme-toggle">
+                切换主题 <span class="theme-icon" id="theme-icon">🌙</span>
+            </button>
+        </div>
+    </div>
+
+    <div class="container">
+        <h1>随机字符生成器</h1>
+        <p>简单好用的随机字符生成器</p>
+        
+        <div class="input-group">
+            <label for="length">字符长度：</label>
+            <input type="number" id="length" min="1" max="10000" value="1">
+            <span class="tooltip">?
+                <span class="tooltip-text">可生成1-10000个随机字符</span>
+            </span>
+        </div>
+        
+        <div class="input-group">
+            <label>字符内容设置：</label>
+            <div class="checkbox-group">
+                <label><input type="checkbox" id="uppercase" checked> 大写字母 (A-Z)</label>
+                <label><input type="checkbox" id="lowercase" checked> 小写字母 (a-z)</label>
+            </div>
+            <div class="checkbox-group">
+                <label><input type="checkbox" id="numbers" checked> 数字 (0-9)</label>
+                <label><input type="checkbox" id="symbols"> 特殊符号 (!@#$%...)</label>
+            </div>
+            <div class="checkbox-group">
+                <label><input type="checkbox" id="emoji"> 表情符号</label>
+                <label><input type="checkbox" id="kaomoji"> 颜文字</label>
+            </div>
+        </div>
+        
+        <div class="advanced-options">
+            <div class="advanced-options-toggle" onclick="toggleAdvancedOptions()">高级选项 ▼</div>
+            <div class="advanced-options-content" id="advanced-options-content">
+                <div class="input-row">
+                    <label for="batch-size">每批生成字符数：</label>
+                    <select id="batch-size">
+                        <option value="100">100</option>
+                        <option value="200">200</option>
+                        <option value="300" selected>300</option>
+                        <option value="500">500</option>
+                        <option value="1000">1000</option>
+                    </select>
+                </div>
+                <div class="input-row">
+                    <label for="batch-delay">批次间暂停时间：</label>
+                    <select id="batch-delay">
+                        <option value="0">不暂停</option>
+                        <option value="100">100毫秒</option>
+                        <option value="200">200毫秒</option>
+                        <option value="300" selected>300毫秒</option>
+                        <option value="500">500毫秒</option>
+                    </select>
+                </div>
+                <div class="input-row">
+                    <label for="custom-chars">自定义字符：</label>
+                    <input type="text" id="custom-chars" placeholder="添加自定义字符到随机池">
+                </div>
+            </div>
+        </div>
+        
+        <button id="generate-btn" onclick="startGenerate()">生成随机字符</button>
+        
+        <div class="progress-container" id="progress-container">
+            <div class="progress-bar">
+                <div class="progress" id="progress"></div>
+            </div>
+            <div class="status" id="status">生成中...</div>
+        </div>
+        
+        <div class="result-container">
+            <div class="result" id="result"></div>
+            <button class="copy-btn" onclick="copyToClipboard()">复制</button>
+        </div>
+        
+        <div class="info">
+            <p>使用提示：</p>
+            <ul>
+                <li>至少选择一种字符类型</li>
+                <li>生成的内容可以直接复制使用</li>
+                <li>长字符会自动换行显示，但不影响复制</li>
+                <li>完美的超长文本生成时性能优化</li>
+                <li>使用高级选项可以调整生成速度和添加自定义字符</li>
+            </ul>
+        </div>
+        
+        <div class="footer">
+            <p>作者：ikdxhz | <a href="https://ikdxhz.top" target="_blank">更多工具</a></p>
+        </div>
+    </div>
+
+    <script>
+        // 表情符号集
+        const emojiChars = '😀😃😄😁😆😅😂🤣😊😇🙂🙃😉😌😍🥰😘😗😙😚😋😛😝😜🤪🤨🧐🤓😎🤩😏😒😞😔😟😕🙁☹️😣😖😫😩🥺😢😭😤😠😡🤬🤯😳🥵🥶😱😨😰😥😓🤗🤔🤭🤫🤥😶😐😑😬🙄😯😦😧😮😲🥱😴🤤😪😵🤐🥴🤢🤮🤧😷🤒🤕🤑🤠';
+        
+        // 颜文字集
+        const kaomojiChars = '(⁠◕⁠ᴗ⁠◕⁠✿)(⁠≧⁠▽⁠≦⁠)(⁠◠⁠‿⁠◕⁠)(⁠◍⁠•⁠ᴗ⁠•⁠◍⁠)(⁠✷⁠‿⁠✷⁠)(⁠✯⁠ᴗ⁠✯⁠)(⁠◡⁠ ⁠ω⁠ ⁠◡⁠)(⁠•⁠‿⁠•⁠)(⁠.⁠ ⁠❛⁠ ⁠ᴗ⁠ ⁠❛⁠.⁠)(⁠ʘ⁠‿⁠ʘ⁠)(⁠ꈍ⁠ᴗ⁠ꈍ⁠)(⁠ᵔ⁠ᴥ⁠ᵔ⁠)(⁠.⁠_⁠.⁠)(⁠・⁠_⁠・⁠)(⁠・⁠_⁠・⁠;⁠)(⁠-⁠_⁠-⁠)(-⁠.⁠-⁠)⋋⁠_⁠⋌^⁠_⁠_;(⁠˘⁠･⁠_⁠･⁠˘⁠)(⁠≧⁠（⁠●⁠´⁠ω⁠｀⁠●⁠）⁠≦⁠)(´⁠；⁠ω⁠；⁠`)(´⁠；⁠ω⁠；⁠`)(⁠｡⁠ﾉ⁠ω⁠＼⁠｡⁠)(⁠;⁠;⁠;⁠・⁠_⁠・⁠)(⁠◞⁠‸⁠◟⁠)(⁠｡⁠•́⁠︿⁠•̀⁠｡⁠)(⁠ ⁠；⁠′⁠⌒⁠`⁠)(⁠≧⁠Д⁠≦⁠)(⁠ᗒ⁠ᴥ⁠ᗕ⁠)(⁠≧⁠▽⁠≦⁠)(⁠｡⁠♡⁠‿⁠♡⁠｡⁠)(⁠.⁠ ⁠❛⁠ ⁠ᴗ⁠ ⁠❛⁠.⁠)(⁠✯⁠ᴗ⁠✯⁠)';
+        
+        // 是否正在生成字符
+        let isGenerating = false;
+        
+        // 主题切换
+        const themeToggleBtn = document.getElementById('theme-toggle');
+        const themeIcon = document.getElementById('theme-icon');
+        
+        // 检查本地存储中的主题偏好
+        if (localStorage.getItem('theme') === 'dark') {
+            document.documentElement.setAttribute('data-theme', 'dark');
+            themeIcon.textContent = '☀️';
+        }
+        
+        // 处理主题切换
+        function toggleTheme() {
+            if (document.documentElement.getAttribute('data-theme') === 'dark') {
+                document.documentElement.setAttribute('data-theme', 'light');
+                localStorage.setItem('theme', 'light');
+                themeIcon.textContent = '🌙';
+                themeIcon.style.transform = 'rotate(360deg)';
+            } else {
+                document.documentElement.setAttribute('data-theme', 'dark');
+                localStorage.setItem('theme', 'dark');
+                themeIcon.textContent = '☀️';
+                themeIcon.style.transform = 'rotate(360deg)';
+            }
+            
+            // 添加容器过渡效果
+            const container = document.querySelector('.container');
+            container.style.opacity = '0.8';
+            setTimeout(() => {
+                container.style.opacity = '1';
+            }, 300);
+        }
+        
+        themeToggleBtn.addEventListener('click', toggleTheme);
+        
+        // 切换高级选项
+        function toggleAdvancedOptions() {
+            const content = document.getElementById('advanced-options-content');
+            const toggle = document.querySelector('.advanced-options-toggle');
+            
+            if (content.style.display === 'block') {
+                content.style.display = 'none';
+                toggle.textContent = '高级选项 ▼';
+            } else {
+                content.style.display = 'block';
+                toggle.textContent = '高级选项 ▲';
+                // 添加进入动画
+                content.style.animation = 'fadeIn 0.5s ease';
+            }
+        }
+        
+        // Sleep函数，用于暂停执行
+        function sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+        
+        // 获取选择的字符集
+        function getCharPool() {
+            const uppercase = document.getElementById('uppercase').checked;
+            const lowercase = document.getElementById('lowercase').checked;
+            const numbers = document.getElementById('numbers').checked;
+            const symbols = document.getElementById('symbols').checked;
+            const emoji = document.getElementById('emoji').checked;
+            const kaomoji = document.getElementById('kaomoji').checked;
+            const customChars = document.getElementById('custom-chars').value;
+            
+            // 至少选择一种字符类型
+            if (!uppercase && !lowercase && !numbers && !symbols && !emoji && !kaomoji && !customChars) {
+                alert('请至少选择一种字符类型！');
+                return '';
+            }
+            
+            let chars = '';
+            if (uppercase) chars += 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+            if (lowercase) chars += 'abcdefghijklmnopqrstuvwxyz';
+            if (numbers) chars += '0123456789';
+            if (symbols) chars += '!@#$%^&*()_+-=[]{}|;:,.<>?/~`';
+            if (emoji) chars += emojiChars;
+            if (kaomoji) chars += kaomojiChars;
+            if (customChars) chars += customChars;
+            
+            return chars;
+        }
+        
+        // 开始生成随机字符
+        function startGenerate() {
+            generateRandomChar();
+        }
+        
+        // 异步生成随机字符
+        async function generateRandomChar() {
+            if (isGenerating) return;
+            
+            const length = parseInt(document.getElementById('length').value) || 1;
+            const chars = getCharPool();
+            
+            if (!chars) return;
+            
+            isGenerating = true;
+            const generateBtn = document.getElementById('generate-btn');
+            generateBtn.disabled = true;
+            
+            const resultElement = document.getElementById('result');
+            const progressContainer = document.getElementById('progress-container');
+            const progress = document.getElementById('progress');
+            const status = document.getElementById('status');
+            
+            // 从高级选项获取设置
+            const batchSize = parseInt(document.getElementById('batch-size').value) || 300;
+            const batchDelay = parseInt(document.getElementById('batch-delay').value) || 300;
+            
+            // 清空结果
+            resultElement.textContent = '';
+            let result = '';
+            
+            // 添加生成中动画效果
+            resultElement.classList.add('generating');
+            
+            // 显示进度条（仅当长度大于100时）
+            if (length > 100) {
+                progressContainer.style.display = 'block';
+                progress.style.width = '0%';
+                status.textContent = '生成中...';
+            }
+            
+            // 分批生成
+            const batches = Math.ceil(length / batchSize);
+            
+            for (let batch = 0; batch < batches; batch++) {
+                const start = batch * batchSize;
+                const end = Math.min((batch + 1) * batchSize, length);
+                
+                // 生成这一批的字符
+                let batchResult = '';
+                for (let i = start; i < end; i++) {
+                    batchResult += chars.charAt(Math.floor(Math.random() * chars.length));
+                }
+                
+                // 添加到结果
+                result += batchResult;
+                
+                // 更新UI
+                resultElement.textContent = result;
+                
+                if (length > 100) {
+                    const percentage = Math.floor((end / length) * 100);
+                    progress.style.width = percentage + '%';
+                    status.textContent = `生成中... ${percentage}%`;
+                }
+                
+                // 如果不是最后一批且批次延迟大于0，暂停指定的时间
+                if (batch < batches - 1 && batchDelay > 0) {
+                    await sleep(batchDelay);
+                }
+            }
+            
+            // 完成
+            if (length > 100) {
+                progress.style.width = '100%';
+                status.textContent = '生成完成！';
+                
+                // 隐藏进度条
+                setTimeout(() => {
+                    progressContainer.style.display = 'none';
+                }, 1000);
+            }
+            
+            // 移除生成中动画，添加完成动画
+            resultElement.classList.remove('generating');
+            resultElement.classList.add('success-animation');
+            
+            // 一段时间后移除完成动画
+            setTimeout(() => {
+                resultElement.classList.remove('success-animation');
+            }, 1000);
+            
+            // 重置状态
+            generateBtn.disabled = false;
+            isGenerating = false;
+        }
+        
+        // 复制到剪贴板
+        function copyToClipboard() {
+            const result = document.getElementById('result').textContent;
+            if (!result) {
+                alert('没有可复制的内容！');
+                return;
+            }
+            
+            // 添加复制按钮动画效果
+            const copyBtn = document.querySelector('.copy-btn');
+            const originalText = copyBtn.textContent;
+            copyBtn.textContent = '复制中...';
+            
+            navigator.clipboard.writeText(result).then(() => {
+                copyBtn.textContent = '✓ 已复制';
+                setTimeout(() => {
+                    copyBtn.textContent = originalText;
+                }, 2000);
+            }).catch(err => {
+                console.error('复制失败: ', err);
+                // 备用复制方法
+                const textarea = document.createElement('textarea');
+                textarea.value = result;
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textarea);
+                copyBtn.textContent = '✓ 已复制';
+                setTimeout(() => {
+                    copyBtn.textContent = originalText;
+                }, 2000);
+            });
+        }
+        
+        // 页面加载时生成一个初始随机字符
+        window.onload = function() {
+            // 添加页面加载动画
+            document.body.style.opacity = '0';
+            setTimeout(() => {
+                document.body.style.opacity = '1';
+                document.body.style.transition = 'opacity 0.5s ease';
+            }, 100);
+            generateRandomChar();
+        };
+    </script>
+</body>
+</html> 
