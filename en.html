@@ -441,6 +441,10 @@
         }
         
         /* Theme toggle button */
+        .theme-switch-wrapper {
+            display: inline-flex;
+            align-items: center;
+        }
         .theme-btn {
             background-color: var(--secondary-button-bg);
             color: var(--button-text);
@@ -486,6 +490,37 @@
                 justify-content: flex-end;
             }
         }
+        
+        /* Export button style */
+        .export-btn {
+            background-color: #27ae60;
+            margin-left: 10px;
+            padding: 5px 10px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .export-btn:hover {
+            background-color: #219653;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+        .export-btn:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        /* Button group container */
+        .button-group {
+            display: flex;
+            margin-top: 10px;
+            justify-content: center;
+        }
     </style>
 </head>
 <body>
@@ -495,7 +530,7 @@
         </div>
         <div class="theme-switch-wrapper">
             <button class="theme-btn" id="theme-toggle">
-                Toggle Theme <span class="theme-icon" id="theme-icon">🌙</span>
+                <span id="theme-text">Toggle Theme</span> <span class="theme-icon" id="theme-icon">🌙</span>
             </button>
         </div>
     </div>
@@ -533,27 +568,91 @@
             <div class="advanced-options-content" id="advanced-options-content">
                 <div class="input-row">
                     <label for="batch-size">Characters per batch:</label>
-                    <select id="batch-size">
+                    <select id="batch-size" style="display: none;">
                         <option value="100">100</option>
                         <option value="200">200</option>
                         <option value="300" selected>300</option>
                         <option value="500">500</option>
                         <option value="1000">1000</option>
                     </select>
+                    <div style="display: flex; align-items: center;">
+                        <input type="number" id="batch-size-input" min="1" max="10000" value="300" style="width: 80px;">
+                        <span style="margin-left: 8px;">characters</span>
+                    </div>
+                    <span class="tooltip">?
+                        <span class="tooltip-text">Set the number of characters to generate per batch. Smaller values reduce browser load, larger values increase generation speed.</span>
+                    </span>
                 </div>
                 <div class="input-row">
                     <label for="batch-delay">Delay between batches:</label>
-                    <select id="batch-delay">
+                    <select id="batch-delay" style="display: none;">
                         <option value="0">No delay</option>
                         <option value="100">100ms</option>
                         <option value="200">200ms</option>
                         <option value="300" selected>300ms</option>
                         <option value="500">500ms</option>
                     </select>
+                    <div style="display: flex; align-items: center;">
+                        <input type="number" id="batch-delay-input" min="0" max="10000" value="300" style="width: 80px;">
+                        <span style="margin-left: 8px;">ms</span>
+                    </div>
+                    <span class="tooltip">?
+                        <span class="tooltip-text">Set the pause time between batches. Longer pauses reduce browser load.</span>
+                    </span>
                 </div>
                 <div class="input-row">
                     <label for="custom-chars">Custom characters:</label>
                     <input type="text" id="custom-chars" placeholder="Add custom characters to the pool">
+                </div>
+                <div class="input-row">
+                    <label for="char-density">Character Density:</label>
+                    <select id="char-density">
+                        <option value="compact" selected>Compact (No Space)</option>
+                        <option value="spaced">Spaced</option>
+                        <option value="double-spaced">Double Spaced</option>
+                    </select>
+                    <span class="tooltip">?
+                        <span class="tooltip-text">Control the density of generated characters, choose between compact, spaced or double-spaced</span>
+                    </span>
+                </div>
+                <div class="input-row">
+                    <label for="line-break">Auto Line Break:</label>
+                    <select id="line-break" style="display: none;">
+                        <option value="0" selected>No Line Breaks</option>
+                        <option value="10">Every 10 Characters</option>
+                        <option value="20">Every 20 Characters</option>
+                        <option value="30">Every 30 Characters</option>
+                        <option value="50">Every 50 Characters</option>
+                        <option value="100">Every 100 Characters</option>
+                    </select>
+                    <div style="display: flex; align-items: center;">
+                        <input type="number" id="line-break-input" min="0" max="1000" value="0" style="width: 80px;">
+                        <span style="margin-left: 8px;">characters</span>
+                    </div>
+                    <span class="tooltip">?
+                        <span class="tooltip-text">Set how often to automatically add line breaks. Enter 0 for no line breaks.</span>
+                    </span>
+                </div>
+                <div class="input-row">
+                    <label for="char-format">Character Format:</label>
+                    <select id="char-format">
+                        <option value="default" selected>Default Format</option>
+                        <option value="uppercase">All Uppercase</option>
+                        <option value="lowercase">All Lowercase</option>
+                        <option value="capitalize">Capitalize First Letter</option>
+                        <option value="alternating">Alternating Case</option>
+                    </select>
+                    <span class="tooltip">?
+                        <span class="tooltip-text">Set the format of generated characters (only applies to letters)</span>
+                    </span>
+                </div>
+                <div class="input-row">
+                    <label for="prefix">Prefix:</label>
+                    <input type="text" id="prefix" placeholder="Add a prefix" style="width: 120px;">
+                </div>
+                <div class="input-row">
+                    <label for="suffix">Suffix:</label>
+                    <input type="text" id="suffix" placeholder="Add a suffix" style="width: 120px;">
                 </div>
             </div>
         </div>
@@ -569,7 +668,10 @@
         
         <div class="result-container">
             <div class="result" id="result"></div>
-            <button class="copy-btn" onclick="copyToClipboard()">Copy</button>
+            <div class="button-group">
+                <button class="copy-btn" onclick="copyToClipboard()">Copy</button>
+                <button class="export-btn" onclick="exportToTxt()">Export TXT</button>
+            </div>
         </div>
         
         <div class="info">
@@ -601,24 +703,75 @@
         // Theme toggle
         const themeToggleBtn = document.getElementById('theme-toggle');
         const themeIcon = document.getElementById('theme-icon');
+        const themeText = document.getElementById('theme-text');
         
-        // Check theme preference in local storage
-        if (localStorage.getItem('theme') === 'dark') {
-            document.documentElement.setAttribute('data-theme', 'dark');
-            themeIcon.textContent = '☀️';
+        // Check theme preference in local storage or system preference
+        function setInitialTheme() {
+            // Check if theme setting exists in localStorage
+            const savedTheme = localStorage.getItem('theme');
+            
+            if (savedTheme) {
+                // If there's a saved setting, use it
+                document.documentElement.setAttribute('data-theme', savedTheme);
+                if (savedTheme === 'dark') {
+                    themeIcon.textContent = '☀️';
+                    themeText.textContent = 'Light Mode';
+                } else {
+                    themeIcon.textContent = '🌙';
+                    themeText.textContent = 'Dark Mode';
+                }
+            } else {
+                // If no saved setting, check system preference
+                if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                    // System prefers dark mode
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                    localStorage.setItem('theme', 'dark');
+                    themeIcon.textContent = '☀️';
+                    themeText.textContent = 'Light Mode';
+                } else {
+                    // System prefers light mode or doesn't support preference
+                    document.documentElement.setAttribute('data-theme', 'light');
+                    localStorage.setItem('theme', 'light');
+                    themeIcon.textContent = '🌙';
+                    themeText.textContent = 'Dark Mode';
+                }
+            }
+        }
+        
+        // Set initial theme on page load
+        setInitialTheme();
+        
+        // Listen for system theme changes
+        if (window.matchMedia) {
+            window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+                if (!localStorage.getItem('theme')) {
+                    // Only follow system changes if user hasn't manually set a theme
+                    if (e.matches) {
+                        document.documentElement.setAttribute('data-theme', 'dark');
+                        themeIcon.textContent = '☀️';
+                    } else {
+                        document.documentElement.setAttribute('data-theme', 'light');
+                        themeIcon.textContent = '🌙';
+                    }
+                }
+            });
         }
         
         // Handle theme toggle
         function toggleTheme() {
+            const themeText = document.getElementById('theme-text');
+            
             if (document.documentElement.getAttribute('data-theme') === 'dark') {
                 document.documentElement.setAttribute('data-theme', 'light');
                 localStorage.setItem('theme', 'light');
                 themeIcon.textContent = '🌙';
+                themeText.textContent = 'Dark Mode';
                 themeIcon.style.transform = 'rotate(360deg)';
             } else {
                 document.documentElement.setAttribute('data-theme', 'dark');
                 localStorage.setItem('theme', 'dark');
                 themeIcon.textContent = '☀️';
+                themeText.textContent = 'Light Mode';
                 themeIcon.style.transform = 'rotate(360deg)';
             }
             
@@ -705,8 +858,13 @@
             const status = document.getElementById('status');
             
             // Get settings from advanced options
-            const batchSize = parseInt(document.getElementById('batch-size').value) || 300;
-            const batchDelay = parseInt(document.getElementById('batch-delay').value) || 300;
+            const batchSize = parseInt(document.getElementById('batch-size-input').value) || 300;
+            const batchDelay = parseInt(document.getElementById('batch-delay-input').value) || 300;
+            const charDensity = document.getElementById('char-density').value || 'compact';
+            const lineBreak = parseInt(document.getElementById('line-break-input').value) || 0;
+            const charFormat = document.getElementById('char-format').value || 'default';
+            const prefix = document.getElementById('prefix').value || '';
+            const suffix = document.getElementById('suffix').value || '';
             
             // Clear the result
             resultElement.textContent = '';
@@ -722,8 +880,18 @@
                 status.textContent = 'Generating...';
             }
             
+            // Calculate actual length based on density settings
+            let actualLength = length;
+            if (charDensity === 'spaced') {
+                actualLength = length * 2 - 1; // Add a space between each character
+            } else if (charDensity === 'double-spaced') {
+                actualLength = length * 3 - 2; // Add two spaces between each character
+            }
+            
             // Generate in batches
             const batches = Math.ceil(length / batchSize);
+            let charCount = 0; // Track generated characters (excluding spaces and line breaks)
+            let mainContent = ''; // Store main content (without prefix and suffix)
             
             for (let batch = 0; batch < batches; batch++) {
                 const start = batch * batchSize;
@@ -732,11 +900,59 @@
                 // Generate characters for this batch
                 let batchResult = '';
                 for (let i = start; i < end; i++) {
-                    batchResult += chars.charAt(Math.floor(Math.random() * chars.length));
+                    let char = chars.charAt(Math.floor(Math.random() * chars.length));
+                    charCount++;
+                    
+                    // Apply character format (only for letters)
+                    if (/[a-zA-Z]/.test(char)) {
+                        switch (charFormat) {
+                            case 'uppercase':
+                                char = char.toUpperCase();
+                                break;
+                            case 'lowercase':
+                                char = char.toLowerCase();
+                                break;
+                            case 'capitalize':
+                                if (charCount === 1 || (lineBreak > 0 && (charCount - 1) % lineBreak === 0)) {
+                                    char = char.toUpperCase();
+                                } else {
+                                    char = char.toLowerCase();
+                                }
+                                break;
+                            case 'alternating':
+                                if (charCount % 2 === 0) {
+                                    char = char.toUpperCase();
+                                } else {
+                                    char = char.toLowerCase();
+                                }
+                                break;
+                        }
+                    }
+                    
+                    // Add spaces according to density setting
+                    if (i > start) { // Not the first character in the batch
+                        if (charDensity === 'spaced') {
+                            batchResult += ' ' + char;
+                        } else if (charDensity === 'double-spaced') {
+                            batchResult += '  ' + char;
+                        } else {
+                            batchResult += char;
+                        }
+                    } else {
+                        batchResult += char;
+                    }
+                    
+                    // If auto line break is enabled and not the last character, check if we need to add a line break
+                    if (lineBreak > 0 && charCount % lineBreak === 0 && i < end - 1) {
+                        batchResult += '\n';
+                    }
                 }
                 
-                // Add to result
-                result += batchResult;
+                // Add to main content
+                mainContent += batchResult;
+                
+                // Add prefix and suffix
+                result = prefix + mainContent + suffix;
                 
                 // Update UI
                 resultElement.textContent = result;
@@ -810,6 +1026,61 @@
                     copyBtn.textContent = originalText;
                 }, 2000);
             });
+        }
+        
+        // Export to TXT file
+        function exportToTxt() {
+            const result = document.getElementById('result').textContent;
+            if (!result) {
+                alert('Nothing to export!');
+                return;
+            }
+            
+            // Add export button animation effect
+            const exportBtn = document.querySelector('.export-btn');
+            const originalText = exportBtn.textContent;
+            exportBtn.textContent = 'Exporting...';
+            
+            try {
+                // Create Blob object
+                const blob = new Blob([result], { type: 'text/plain;charset=utf-8' });
+                
+                // Create download link
+                const link = document.createElement('a');
+                const url = URL.createObjectURL(blob);
+                
+                // Get current date time for filename
+                const now = new Date();
+                const fileName = `RandomChars_${now.getFullYear()}${padZero(now.getMonth()+1)}${padZero(now.getDate())}_${padZero(now.getHours())}${padZero(now.getMinutes())}${padZero(now.getSeconds())}.txt`;
+                
+                // Set download attributes
+                link.href = url;
+                link.download = fileName;
+                link.style.display = 'none';
+                
+                // Add to DOM and trigger click
+                document.body.appendChild(link);
+                link.click();
+                
+                // Cleanup
+                document.body.removeChild(link);
+                URL.revokeObjectURL(url);
+                
+                // Update button text
+                exportBtn.textContent = '✓ Exported';
+                setTimeout(() => {
+                    exportBtn.textContent = originalText;
+                }, 2000);
+            } catch (err) {
+                console.error('Export failed: ', err);
+                alert('Export failed, please try again!');
+                exportBtn.textContent = originalText;
+            }
+        }
+        
+        // Zero-pad numbers function
+        function padZero(num) {
+            return num.toString().padStart(2, '0');
         }
         
         // Generate an initial random character on page load

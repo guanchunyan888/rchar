@@ -245,6 +245,37 @@
             transform: translateY(0);
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
+        
+        /* 导出按钮样式 */
+        .export-btn {
+            background-color: #27ae60;
+            margin-left: 10px;
+            padding: 5px 10px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .export-btn:hover {
+            background-color: #219653;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+        .export-btn:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        /* 按钮组容器 */
+        .button-group {
+            display: flex;
+            margin-top: 10px;
+            justify-content: center;
+        }
         .progress-container {
             display: none;
             margin-top: 15px;
@@ -459,6 +490,10 @@
         }
         
         /* 主题切换按钮 */
+        .theme-switch-wrapper {
+            display: inline-flex;
+            align-items: center;
+        }
         .theme-btn {
             background-color: var(--secondary-button-bg);
             color: var(--button-text);
@@ -513,7 +548,7 @@
         </div>
         <div class="theme-switch-wrapper">
             <button class="theme-btn" id="theme-toggle">
-                切换主题 <span class="theme-icon" id="theme-icon">🌙</span>
+                <span id="theme-text">切换主题</span> <span class="theme-icon" id="theme-icon">🌙</span>
             </button>
         </div>
     </div>
@@ -551,27 +586,91 @@
             <div class="advanced-options-content" id="advanced-options-content">
                 <div class="input-row">
                     <label for="batch-size">每批生成字符数：</label>
-                    <select id="batch-size">
+                    <select id="batch-size" style="display: none;">
                         <option value="100">100</option>
                         <option value="200">200</option>
                         <option value="300" selected>300</option>
                         <option value="500">500</option>
                         <option value="1000">1000</option>
                     </select>
+                    <div style="display: flex; align-items: center;">
+                        <input type="number" id="batch-size-input" min="1" max="10000" value="300" style="width: 80px;">
+                        <span style="margin-left: 8px;">个字符</span>
+                    </div>
+                    <span class="tooltip">?
+                        <span class="tooltip-text">设置每批生成的字符数，较小的值可减轻浏览器负担，较大的值可提高生成速度</span>
+                    </span>
                 </div>
                 <div class="input-row">
                     <label for="batch-delay">批次间暂停时间：</label>
-                    <select id="batch-delay">
+                    <select id="batch-delay" style="display: none;">
                         <option value="0">不暂停</option>
                         <option value="100">100毫秒</option>
                         <option value="200">200毫秒</option>
                         <option value="300" selected>300毫秒</option>
                         <option value="500">500毫秒</option>
                     </select>
+                    <div style="display: flex; align-items: center;">
+                        <input type="number" id="batch-delay-input" min="0" max="10000" value="300" style="width: 80px;">
+                        <span style="margin-left: 8px;">毫秒</span>
+                    </div>
+                    <span class="tooltip">?
+                        <span class="tooltip-text">设置每批生成之间的暂停时间，较长的暂停时间可减轻浏览器负担</span>
+                    </span>
                 </div>
                 <div class="input-row">
                     <label for="custom-chars">自定义字符：</label>
                     <input type="text" id="custom-chars" placeholder="添加自定义字符到随机池">
+                </div>
+                <div class="input-row">
+                    <label for="char-density">字符密度：</label>
+                    <select id="char-density">
+                        <option value="compact" selected>紧凑（无空格）</option>
+                        <option value="spaced">间隔（带空格）</option>
+                        <option value="double-spaced">双倍间隔</option>
+                    </select>
+                    <span class="tooltip">?
+                        <span class="tooltip-text">控制生成字符的密度，可以选择紧凑、带空格或双倍空格</span>
+                    </span>
+                </div>
+                <div class="input-row">
+                    <label for="line-break">自动换行：</label>
+                    <select id="line-break" style="display: none;">
+                        <option value="0" selected>不换行</option>
+                        <option value="10">每10个字符</option>
+                        <option value="20">每20个字符</option>
+                        <option value="30">每30个字符</option>
+                        <option value="50">每50个字符</option>
+                        <option value="100">每100个字符</option>
+                    </select>
+                    <div style="display: flex; align-items: center;">
+                        <input type="number" id="line-break-input" min="0" max="1000" value="0" style="width: 80px;">
+                        <span style="margin-left: 8px;">个字符</span>
+                    </div>
+                    <span class="tooltip">?
+                        <span class="tooltip-text">设置每隔多少个字符自动添加一个换行符，输入0表示不换行</span>
+                    </span>
+                </div>
+                <div class="input-row">
+                    <label for="char-format">字符格式：</label>
+                    <select id="char-format">
+                        <option value="default" selected>默认格式</option>
+                        <option value="uppercase">全大写</option>
+                        <option value="lowercase">全小写</option>
+                        <option value="capitalize">首字母大写</option>
+                        <option value="alternating">交替大小写</option>
+                    </select>
+                    <span class="tooltip">?
+                        <span class="tooltip-text">设置生成字符的格式（仅对字母有效）</span>
+                    </span>
+                </div>
+                <div class="input-row">
+                    <label for="prefix">前缀：</label>
+                    <input type="text" id="prefix" placeholder="添加字符前缀" style="width: 120px;">
+                </div>
+                <div class="input-row">
+                    <label for="suffix">后缀：</label>
+                    <input type="text" id="suffix" placeholder="添加字符后缀" style="width: 120px;">
                 </div>
             </div>
         </div>
@@ -587,7 +686,10 @@
         
         <div class="result-container">
             <div class="result" id="result"></div>
-            <button class="copy-btn" onclick="copyToClipboard()">复制</button>
+            <div class="button-group">
+                <button class="copy-btn" onclick="copyToClipboard()">复制</button>
+                <button class="export-btn" onclick="exportToTxt()">导出TXT</button>
+            </div>
         </div>
         
         <div class="info">
@@ -619,24 +721,75 @@
         // 主题切换
         const themeToggleBtn = document.getElementById('theme-toggle');
         const themeIcon = document.getElementById('theme-icon');
+        const themeText = document.getElementById('theme-text');
         
-        // 检查本地存储中的主题偏好
-        if (localStorage.getItem('theme') === 'dark') {
-            document.documentElement.setAttribute('data-theme', 'dark');
-            themeIcon.textContent = '☀️';
+        // 检查本地存储中的主题偏好或系统偏好
+        function setInitialTheme() {
+            // 检查 localStorage 中是否有保存的主题设置
+            const savedTheme = localStorage.getItem('theme');
+            
+            if (savedTheme) {
+                // 如果有保存的设置，使用保存的设置
+                document.documentElement.setAttribute('data-theme', savedTheme);
+                if (savedTheme === 'dark') {
+                    themeIcon.textContent = '☀️';
+                    themeText.textContent = '亮色模式';
+                } else {
+                    themeIcon.textContent = '🌙';
+                    themeText.textContent = '暗色模式';
+                }
+            } else {
+                // 如果没有保存的设置，检查系统偏好
+                if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                    // 系统偏好暗色
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                    localStorage.setItem('theme', 'dark');
+                    themeIcon.textContent = '☀️';
+                    themeText.textContent = '亮色模式';
+                } else {
+                    // 系统偏好亮色或不支持
+                    document.documentElement.setAttribute('data-theme', 'light');
+                    localStorage.setItem('theme', 'light');
+                    themeIcon.textContent = '🌙';
+                    themeText.textContent = '暗色模式';
+                }
+            }
+        }
+        
+        // 页面加载时设置初始主题
+        setInitialTheme();
+        
+        // 监听系统主题变化
+        if (window.matchMedia) {
+            window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+                if (!localStorage.getItem('theme')) {
+                    // 只有在用户没有手动设置主题时才跟随系统变化
+                    if (e.matches) {
+                        document.documentElement.setAttribute('data-theme', 'dark');
+                        themeIcon.textContent = '☀️';
+                    } else {
+                        document.documentElement.setAttribute('data-theme', 'light');
+                        themeIcon.textContent = '🌙';
+                    }
+                }
+            });
         }
         
         // 处理主题切换
         function toggleTheme() {
+            const themeText = document.getElementById('theme-text');
+            
             if (document.documentElement.getAttribute('data-theme') === 'dark') {
                 document.documentElement.setAttribute('data-theme', 'light');
                 localStorage.setItem('theme', 'light');
                 themeIcon.textContent = '🌙';
+                themeText.textContent = '暗色模式';
                 themeIcon.style.transform = 'rotate(360deg)';
             } else {
                 document.documentElement.setAttribute('data-theme', 'dark');
                 localStorage.setItem('theme', 'dark');
                 themeIcon.textContent = '☀️';
+                themeText.textContent = '亮色模式';
                 themeIcon.style.transform = 'rotate(360deg)';
             }
             
@@ -723,8 +876,13 @@
             const status = document.getElementById('status');
             
             // 从高级选项获取设置
-            const batchSize = parseInt(document.getElementById('batch-size').value) || 300;
-            const batchDelay = parseInt(document.getElementById('batch-delay').value) || 300;
+            const batchSize = parseInt(document.getElementById('batch-size-input').value) || 300;
+            const batchDelay = parseInt(document.getElementById('batch-delay-input').value) || 300;
+            const charDensity = document.getElementById('char-density').value || 'compact';
+            const lineBreak = parseInt(document.getElementById('line-break-input').value) || 0;
+            const charFormat = document.getElementById('char-format').value || 'default';
+            const prefix = document.getElementById('prefix').value || '';
+            const suffix = document.getElementById('suffix').value || '';
             
             // 清空结果
             resultElement.textContent = '';
@@ -740,8 +898,18 @@
                 status.textContent = '生成中...';
             }
             
+            // 根据密度设置计算实际需要生成的字符数
+            let actualLength = length;
+            if (charDensity === 'spaced') {
+                actualLength = length * 2 - 1; // 每个字符之间添加一个空格
+            } else if (charDensity === 'double-spaced') {
+                actualLength = length * 3 - 2; // 每个字符之间添加两个空格
+            }
+            
             // 分批生成
             const batches = Math.ceil(length / batchSize);
+            let charCount = 0; // 跟踪已生成的实际字符数（不含空格和换行）
+            let mainContent = ''; // 保存主要内容（不含前缀和后缀）
             
             for (let batch = 0; batch < batches; batch++) {
                 const start = batch * batchSize;
@@ -750,11 +918,59 @@
                 // 生成这一批的字符
                 let batchResult = '';
                 for (let i = start; i < end; i++) {
-                    batchResult += chars.charAt(Math.floor(Math.random() * chars.length));
+                    let char = chars.charAt(Math.floor(Math.random() * chars.length));
+                    charCount++;
+                    
+                    // 应用字符格式（仅对字母有效）
+                    if (/[a-zA-Z]/.test(char)) {
+                        switch (charFormat) {
+                            case 'uppercase':
+                                char = char.toUpperCase();
+                                break;
+                            case 'lowercase':
+                                char = char.toLowerCase();
+                                break;
+                            case 'capitalize':
+                                if (charCount === 1 || (lineBreak > 0 && (charCount - 1) % lineBreak === 0)) {
+                                    char = char.toUpperCase();
+                                } else {
+                                    char = char.toLowerCase();
+                                }
+                                break;
+                            case 'alternating':
+                                if (charCount % 2 === 0) {
+                                    char = char.toUpperCase();
+                                } else {
+                                    char = char.toLowerCase();
+                                }
+                                break;
+                        }
+                    }
+                    
+                    // 根据密度设置添加空格
+                    if (i > start) { // 不是批次的第一个字符
+                        if (charDensity === 'spaced') {
+                            batchResult += ' ' + char;
+                        } else if (charDensity === 'double-spaced') {
+                            batchResult += '  ' + char;
+                        } else {
+                            batchResult += char;
+                        }
+                    } else {
+                        batchResult += char;
+                    }
+                    
+                    // 如果启用了自动换行且不是最后一个字符，检查是否需要添加换行符
+                    if (lineBreak > 0 && charCount % lineBreak === 0 && i < end - 1) {
+                        batchResult += '\n';
+                    }
                 }
                 
                 // 添加到结果
-                result += batchResult;
+                mainContent += batchResult;
+                
+                // 添加前缀和后缀
+                result = prefix + mainContent + suffix;
                 
                 // 更新UI
                 resultElement.textContent = result;
@@ -828,6 +1044,61 @@
                     copyBtn.textContent = originalText;
                 }, 2000);
             });
+        }
+        
+        // 导出为TXT文件
+        function exportToTxt() {
+            const result = document.getElementById('result').textContent;
+            if (!result) {
+                alert('没有可导出的内容！');
+                return;
+            }
+            
+            // 添加导出按钮动画效果
+            const exportBtn = document.querySelector('.export-btn');
+            const originalText = exportBtn.textContent;
+            exportBtn.textContent = '导出中...';
+            
+            try {
+                // 创建Blob对象
+                const blob = new Blob([result], { type: 'text/plain;charset=utf-8' });
+                
+                // 创建下载链接
+                const link = document.createElement('a');
+                const url = URL.createObjectURL(blob);
+                
+                // 获取当前日期时间作为文件名
+                const now = new Date();
+                const fileName = `随机字符_${now.getFullYear()}${padZero(now.getMonth()+1)}${padZero(now.getDate())}_${padZero(now.getHours())}${padZero(now.getMinutes())}${padZero(now.getSeconds())}.txt`;
+                
+                // 设置下载属性
+                link.href = url;
+                link.download = fileName;
+                link.style.display = 'none';
+                
+                // 添加到DOM并触发点击
+                document.body.appendChild(link);
+                link.click();
+                
+                // 清理
+                document.body.removeChild(link);
+                URL.revokeObjectURL(url);
+                
+                // 更新按钮文本
+                exportBtn.textContent = '✓ 已导出';
+                setTimeout(() => {
+                    exportBtn.textContent = originalText;
+                }, 2000);
+            } catch (err) {
+                console.error('导出失败: ', err);
+                alert('导出失败，请重试！');
+                exportBtn.textContent = originalText;
+            }
+        }
+        
+        // 数字补零函数
+        function padZero(num) {
+            return num.toString().padStart(2, '0');
         }
         
         // 页面加载时生成一个初始随机字符
